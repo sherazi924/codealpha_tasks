@@ -1,42 +1,97 @@
-# 💎 Dormon Pro - VIP iOS Glass AI Workspace (Task 2)
+<div align="center">
 
-![License](https://img.shields.io/badge/License-MIT-blue.svg)
-![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC?logo=tailwind-css)
-![Groq](https://img.shields.io/badge/Powered_By-Groq_API-orange)
-![Single File](https://img.shields.io/badge/Architecture-Single_File-success)
+  <h1>💎 Dormon Pro — VIP iOS Glass AI Workspace</h1>
+  <p><strong> | Task 2 — AI Chatbot Interface</strong></p>
 
-**Dormon Pro** is an advanced, ultra-modern, iOS-inspired AI Chat Workspace built with a **VIP Glassmorphism UI**, dynamic interactive elements, and lightning-fast response speeds powered by the **Groq API**. Developed as part of Task 2.
+  <!-- Badges -->
+  <p>
+    <a href="https://github.com/sherazi924/codealpha_tasks"><img src="https://img.shields.io/badge/CodeAlpha-Task_2-purple?style=for-the-badge&logo=github" alt="Task 2"></a>
+    <img src="https://img.shields.io/badge/React-18.0-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 18">
+    <img src="https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+    <img src="https://img.shields.io/badge/Groq_API-Powered-orange?style=for-the-badge" alt="Groq API">
+    <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+  </p>
 
----
+  <p>
+    An ultra-modern, iOS-inspired AI Chat Workspace featuring a <strong>VIP Glassmorphism UI</strong>, interactive mouse-tracking spotlight, multi-model LLM integration via Groq API, and voice capabilities.
+  </p>
 
-## ✨ Key Features
-
-* **🪟 Interactive iOS Glassmorphism UI:** Premium frosted glass aesthetic with fluid animations.
-* **⚡ Powered by Groq API:** Ultra-fast inference with support for models like `llama-3.3-70b-versatile`, `llama3-8b-8192`, and `mixtral-8x7b-32768`.
-* **📝 Markdown & Code Highlighting:** Rich text rendering via `Marked.js` and syntax highlighting via `Highlight.js` (Tokyo Night theme).
-* **🎙️ Voice Interaction:** 
-  * **Speech-to-Text:** Urdu/English voice input using the Web Speech API.
-  * **Text-to-Speech:** Listen to AI responses read aloud instantly.
-* **🛠️ Advanced Utilities:**
-  * **Stop Generation (🛑) & Regenerate (🔄):** Full control over AI stream generation.
-  * **Export Chat (📄):** Save your conversation history as a `.txt` file.
-  * **Smart Word & Character Counter:** Real-time stats for input messages.
-  * **Local Persistence:** Chat history, API keys, and preferences saved securely via `localStorage`.
+</div>
 
 ---
 
-## 🛠️ Tech Stack
+## 🖼️ Application Preview & Screenshots
 
-* **Frontend Framework:** React 18 (via CDN) & Babel Compiler
-* **Styling:** Tailwind CSS (via CDN) + Custom Animations
-* **AI Engine:** Groq Cloud API
-* **Parsers:** Marked.js & Highlight.js
+<div align="center">
+
+  ### 🌟 Main Workspace Overview
+  <img src="https://github.com/user-attachments/assets/822db540-bfcb-4610-8dd2-f759e1ac30bd" alt="Dormon Pro Main Overview" width="100%" style="border-radius: 12px; margin-bottom: 15px;" />
+
+  <br/><br/>
+
+  <table width="100%">
+    <tr>
+      <td width="50%" align="center">
+        <h4>💬 Interactive Chat Experience</h4>
+        <img src="https://github.com/user-attachments/assets/030bc38e-6d08-4e9c-bdca-2dd079615507" alt="Chat Experience" width="100%" style="border-radius: 10px;" />
+      </td>
+      <td width="50%" align="center">
+        <h4>⚙️ Glassmorphism Settings Panel</h4>
+        <img src="https://github.com/user-attachments/assets/472f025c-bb19-460e-9e9d-bb01a6806b85" alt="Settings Drawer" width="100%" style="border-radius: 10px;" />
+      </td>
+    </tr>
+  </table>
+
+  <br/>
+
+  ### 🖥️ Fullscreen AI Coding & Output View
+  <img src="https://github.com/user-attachments/assets/7eb80ce2-71a1-45e2-b9a2-14e08767d2ec" alt="Full Interface Preview" width="100%" style="border-radius: 12px;" />
+
+</div>
 
 ---
 
-## 🚀 Quick Start
+## ✨ Key Features & Highlights
 
-1. Open the `Task 2` folder and ensure `index.html` is properly placed.
-2. Open `index.html` directly in any modern web browser.
-3. Click the **Settings (⚙️)** icon in the top header, paste your **Groq API Key (`gsk_...`)**, and start chatting with Dormon Pro!
+### 🪟 Next-Gen Glassmorphism UI
+* **Dynamic Spotlight Glow:** Interactive `--mouse-x` and `--mouse-y` lighting effect that smoothly follows your cursor across frosted glass panels.
+* **Apple iOS Aesthetic:** Custom backdrop blurs, rounded containers, and high-end typography.
+
+### ⚡ Blazing-Fast AI Performance (Groq Engine)
+* Integrated with high-speed LLMs:
+  * `llama-3.3-70b-versatile` (Default High-Intelligence Model)
+  * `llama3-8b-8192` (Ultra Fast Response)
+  * `mixtral-8x7b-32768` (Complex Reasoning)
+
+### 🎙️ Smart Voice & Audio Integration
+* **Speech-to-Text:** Speak directly in Urdu or English using Web Speech Recognition.
+* **Text-to-Speech:** Listen to AI answers out loud with instant speech synthesis.
+
+### 🛠️ Developer & Productivity Tools
+* **Rich Markdown Formatting:** Code block highlighting powered by `Highlight.js` (GitHub Dark Dimmed theme).
+* **Quick Prompts (✨):** Single-click starter prompt chips.
+* **Export & Clear Chat (📄 / 🗑️):** Download entire conversations as `.txt` files or clear chat instantly.
+* **Fullscreen Mode (🔲):** Distraction-free interface ideal for long coding/writing sessions.
+* **Local Persistence:** Automatic saving of conversations, active model, and system prompts in `localStorage`.
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+| Layer | Technology Used |
+| :--- | :--- |
+| **Frontend Core** | React 18 (Standalone via CDN) & Babel Browser Compiler |
+| **Styling & UI** | Tailwind CSS (v3), Custom CSS Variables, Glassmorphism Backdrop Filters |
+| **AI Inference Engine** | Groq API Endpoint (OpenAI API Compatible) |
+| **Markdown Parsing** | Marked.js |
+| **Code Syntax Highlighter** | Highlight.js |
+
+---
+
+## 🚀 Quick Start Guide
+
+Since **Dormon Pro** is built as a zero-build standalone application, you don't need `npm` or complex installation scripts.
+
+1. **Clone the Repository:**
+   ```bash
+   git clone [https://github.com/sherazi924/codealpha_tasks.git](https://github.com/sherazi924/codealpha_tasks.git)
