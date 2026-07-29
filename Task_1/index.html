@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TastyTrack Pro - Full Stack Web App</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Custom Styles for Animations -->
+  <style>
+    /* Smooth Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Custom Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes popIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+    
+    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
+    /* Staggered delays for list items */
+    .delay-100 { animation-delay: 100ms; }
+    .delay-200 { animation-delay: 200ms; }
+    .delay-300 { animation-delay: 300ms; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-teal-500 selection:text-white">
+  
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- BIG DATA ---
+    const defaultRecipes = [
+      { id: 1, title: "Avocado Toast with Egg", category: "Breakfast", time: "15 mins", difficulty: "Easy", image: "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?w=500&q=80", ingredients: ["Avocado", "Bread", "Eggs", "Chili Flakes", "Lemon"], instructions: "Toast bread. Mash avocado with lemon. Fry egg sunny-side up. Top toast with avocado, egg, and chili flakes." },
+      { id: 2, title: "Grilled Chicken Salad", category: "Lunch", time: "25 mins", difficulty: "Medium", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&q=80", ingredients: ["Chicken Breast", "Lettuce", "Cherry Tomatoes", "Olive Oil", "Balsamic"], instructions: "Grill seasoned chicken. Chop veggies. Slice chicken and mix with greens. Drizzle with olive oil and balsamic dressing." },
+      { id: 3, title: "Creamy Pasta Alfredo", category: "Dinner", time: "30 mins", difficulty: "Hard", image: "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?w=500&q=80", ingredients: ["Fettuccine", "Heavy Cream", "Parmesan", "Garlic", "Butter"], instructions: "Boil pasta. Sauté garlic in butter, stir in cream. Simmer, add parmesan until sauce thickens. Toss with pasta." },
+      { id: 4, title: "Berry Smoothie Bowl", category: "Breakfast", time: "10 mins", difficulty: "Easy", image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=500&q=80", ingredients: ["Mixed Berries", "Banana", "Almond Milk", "Chia Seeds"], instructions: "Blend frozen berries, banana, and milk until thick. Pour into a bowl and top with fresh fruits and chia seeds." },
+      { id: 5, title: "Spicy Beef Tacos", category: "Dinner", time: "35 mins", difficulty: "Medium", image: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=500&q=80", ingredients: ["Ground Beef", "Taco Shells", "Cheddar", "Salsa", "Jalapenos"], instructions: "Brown beef with taco seasoning. Warm shells. Assemble with beef, cheese, salsa, and fresh jalapenos." },
+      { id: 6, title: "Quinoa Veggie Bowl", category: "Lunch", time: "20 mins", difficulty: "Easy", image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80", ingredients: ["Quinoa", "Broccoli", "Sweet Potato", "Tahini"], instructions: "Cook quinoa. Roast sweet potato and broccoli. Combine in a bowl and drizzle with tahini dressing." }
+    ];
+
+    const defaultInventory = [
+      { id: 1, name: "Whole Milk", category: "Dairy", daysLeft: 2, total: 7 },
+      { id: 2, name: "Farm Eggs", category: "Dairy", daysLeft: 10, total: 14 },
+      { id: 3, name: "Fresh Spinach", category: "Vegetable", daysLeft: 3, total: 7 },
+      { id: 4, name: "Chicken Breast", category: "Meat", daysLeft: 1, total: 5 },
+      { id: 5, name: "Cherry Tomatoes", category: "Vegetable", daysLeft: 6, total: 10 },
+      { id: 6, name: "Cheddar Cheese", category: "Dairy", daysLeft: 15, total: 30 },
+      { id: 7, name: "Avocados", category: "Vegetable", daysLeft: 4, total: 7 },
+      { id: 8, name: "Almond Milk", category: "Dairy", daysLeft: 20, total: 30 },
+    ];
+
+    // --- ICONS ---
+    const Icon = ({ path, className = "w-5 h-5" }) => (
+      <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+        <path d={path} />
+      </svg>
+    );
+    const paths = {
+      utensils: "M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2 M7 2v20 M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7",
+      search: "M19 19l-4-4 M11 17a6 6 0 100-12 6 6 0 000 12z",
+      clock: "M12 6v6l4 2 M12 22a10 10 0 100-20 10 10 0 000 20z",
+      alert: "M12 8v4 M12 16h.01 M12 22a10 10 0 100-20 10 10 0 000 20z",
+      check: "M20 6L9 17l-5-5",
+      x: "M18 6L6 18 M6 6l12 12",
+      sparkles: "M12 3l1.9 5.8a2 2 0 001.3 1.3L21 12l-5.8 1.9a2 2 0 00-1.3 1.3L12 21l-1.9-5.8a2 2 0 00-1.3-1.3L3 12l5.8-1.9a2 2 0 001.3-1.3L12 3z",
+      home: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10",
+      list: "M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01",
+      trash: "M3 6h18 M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+    };
+
+    // --- MAIN APP ---
+    function App() {
+      // Multiple Pages State
+      const [activePage, setActivePage] = useState('dashboard');
+      
+      // Simulated Database using LocalStorage (Full Stack feel)
+      const [recipes, setRecipes] = useState(() => JSON.parse(localStorage.getItem('tasty_recipes')) || defaultRecipes);
+      const [inventory, setInventory] = useState(() => JSON.parse(localStorage.getItem('tasty_inventory')) || defaultInventory);
+      
+      const [searchTerm, setSearchTerm] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('All');
+      const [selectedRecipe, setSelectedRecipe] = useState(null);
+
+      // Save to localStorage on change
+      useEffect(() => { localStorage.setItem('tasty_recipes', JSON.stringify(recipes)); }, [recipes]);
+      useEffect(() => { localStorage.setItem('tasty_inventory', JSON.stringify(inventory)); }, [inventory]);
+
+      // Derived Data
+      const expiringSoon = inventory.filter(item => item.daysLeft <= 3).sort((a, b) => a.daysLeft - b.daysLeft);
+      
+      const filteredRecipes = recipes.filter(recipe => {
+        const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                              recipe.ingredients.some(i => i.toLowerCase().includes(searchTerm.toLowerCase()));
+        const matchesCat = selectedCategory === 'All' || recipe.category === selectedCategory;
+        return matchesSearch && matchesCat;
+      });
+
+      // Delete Functionality
+      const deleteInventoryItem = (id) => setInventory(inventory.filter(i => i.id !== id));
+
+      return (
+        <div className="min-h-screen flex flex-col md:flex-row bg-slate-50">
+          
+          {/* SIDEBAR / NAVIGATION (Modern App Layout) */}
+          <aside className="w-full md:w-64 bg-teal-800 text-white md:min-h-screen sticky top-0 z-40 shadow-xl flex flex-col">
+            <div className="p-6 flex items-center gap-3 bg-teal-900/50">
+              <div className="p-2 bg-teal-500 rounded-xl shadow-lg transform hover:rotate-12 transition-all"><Icon path={paths.utensils} className="w-6 h-6 text-white"/></div>
+              <h1 className="text-2xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-teal-200 to-white">TastyPro</h1>
+            </div>
+            
+            <nav className="flex-1 p-4 flex md:flex-col gap-2 overflow-x-auto md:overflow-visible scrollbar-none">
+              {[
+                { id: 'dashboard', label: 'Dashboard', icon: paths.home },
+                { id: 'recipes', label: 'All Recipes', icon: paths.utensils },
+                { id: 'inventory', label: 'Smart Fridge', icon: paths.list }
+              ].map(tab => (
+                <button 
+                  key={tab.id} onClick={() => setActivePage(tab.id)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-300 whitespace-nowrap ${
+                    activePage === tab.id ? 'bg-teal-600 shadow-md transform scale-105' : 'hover:bg-teal-700/50 text-teal-100 hover:text-white'
+                  }`}
+                >
+                  <Icon path={tab.icon} /> {tab.label}
+                </button>
+              ))}
+            </nav>
+            
+            <div className="hidden md:block p-6 mt-auto">
+              <div className="bg-teal-700/50 p-4 rounded-2xl border border-teal-500/30">
+                <p className="text-xs text-teal-200 mb-2">Total Recipes Saved</p>
+                <p className="text-3xl font-bold">{recipes.length}</p>
+              </div>
+            </div>
+          </aside>
+
+          {/* MAIN CONTENT AREA */}
+          <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full max-w-7xl mx-auto">
+            
+            {/* --- PAGE 1: DASHBOARD --- */}
+            {activePage === 'dashboard' && (
+              <div className="space-y-8 animate-fade-in">
+                <header>
+                  <h2 className="text-3xl font-black text-slate-800 mb-2">Welcome Back, Chef! 👋</h2>
+                  <p className="text-slate-500">Here is what's happening in your kitchen today.</p>
+                </header>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Alerts Widget */}
+                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-red-100 hover:shadow-xl transition-shadow delay-100 animate-fade-in">
+                    <div className="flex items-center gap-2 text-red-500 font-bold mb-4">
+                      <Icon path={paths.alert} /> <h3>Expiring Very Soon ({expiringSoon.length})</h3>
+                    </div>
+                    {expiringSoon.length > 0 ? (
+                      <div className="space-y-3">
+                        {expiringSoon.map(item => (
+                          <div key={item.id} className="flex justify-between items-center p-3 bg-red-50 rounded-xl">
+                            <span className="font-semibold text-slate-700">{item.name}</span>
+                            <span className="text-xs font-bold px-2.5 py-1 bg-red-500 text-white rounded-full animate-pulse">{item.daysLeft} days left</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-slate-500 text-sm">Everything is fresh! 🌱</p>
+                    )}
+                  </div>
+
+                  {/* Quick Stats Widget */}
+                  <div className="bg-gradient-to-br from-teal-500 to-emerald-600 rounded-3xl p-6 shadow-lg text-white delay-200 animate-fade-in">
+                    <h3 className="font-bold text-teal-50 mb-6 flex items-center gap-2"><Icon path={paths.sparkles}/> Kitchen Status</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl">
+                        <p className="text-teal-100 text-sm mb-1">Items in Fridge</p>
+                        <p className="text-4xl font-black">{inventory.length}</p>
+                      </div>
+                      <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl">
+                        <p className="text-teal-100 text-sm mb-1">Ready Recipes</p>
+                        <p className="text-4xl font-black">{recipes.length}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- PAGE 2: RECIPES --- */}
+            {activePage === 'recipes' && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                  <div className="relative w-full md:w-96">
+                    <Icon path={paths.search} className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+                    <input type="text" placeholder="Search recipes, ingredients..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium text-slate-700" />
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
+                    {['All', 'Breakfast', 'Lunch', 'Dinner'].map(cat => (
+                      <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${selectedCategory === cat ? 'bg-slate-800 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>{cat}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredRecipes.map((recipe, idx) => (
+                    <div key={recipe.id} onClick={() => setSelectedRecipe(recipe)} className="group bg-white rounded-3xl shadow-sm hover:shadow-2xl hover:-translate-y-2 border border-slate-100 overflow-hidden transition-all duration-300 cursor-pointer animate-fade-in" style={{ animationDelay: `${idx * 100}ms` }}>
+                      <div className="relative h-56 overflow-hidden">
+                        <img src={recipe.image} alt={recipe.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md bg-teal-500 text-white mb-2 inline-block shadow-lg">{recipe.category}</span>
+                          <h3 className="text-xl font-bold text-white line-clamp-1">{recipe.title}</h3>
+                        </div>
+                      </div>
+                      <div className="p-5">
+                        <div className="flex items-center justify-between text-sm text-slate-500 font-semibold mb-3">
+                          <span className="flex items-center gap-1.5"><Icon path={paths.clock} className="w-4 h-4 text-teal-600"/> {recipe.time}</span>
+                          <span className={`px-2 py-0.5 rounded-md text-xs ${recipe.difficulty === 'Easy' ? 'bg-green-100 text-green-700' : recipe.difficulty === 'Medium' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}`}>{recipe.difficulty}</span>
+                        </div>
+                        <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">{recipe.ingredients.join(' • ')}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* --- PAGE 3: INVENTORY --- */}
+            {activePage === 'inventory' && (
+              <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+                <header className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-black text-slate-800">Smart Fridge Status</h2>
+                </header>
+                
+                <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                  {inventory.map((item, idx) => {
+                    const percentage = (item.daysLeft / item.total) * 100;
+                    const isDanger = item.daysLeft <= 3;
+                    return (
+                      <div key={item.id} className="p-5 border-b border-slate-50 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="text-lg font-bold text-slate-800">{item.name}</h4>
+                            <span className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">{item.category}</span>
+                          </div>
+                          
+                          {/* Visual Expiry Bar */}
+                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full transition-all duration-1000 ${isDanger ? 'bg-red-500' : percentage < 50 ? 'bg-orange-400' : 'bg-teal-500'}`} style={{ width: `${percentage}%` }}></div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between md:justify-end gap-6 md:w-64">
+                          <div className="text-right">
+                            {isDanger ? (
+                              <span className="flex items-center gap-1.5 text-sm font-black text-red-500 animate-pulse"><Icon path={paths.alert} className="w-4 h-4"/> {item.daysLeft} days</span>
+                            ) : (
+                              <span className="flex items-center gap-1.5 text-sm font-bold text-teal-600"><Icon path={paths.check} className="w-4 h-4"/> {item.daysLeft} days left</span>
+                            )}
+                          </div>
+                          <button onClick={() => deleteInventoryItem(item.id)} className="p-2 text-slate-300 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors">
+                            <Icon path={paths.trash} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </main>
+
+          {/* --- RECIPE MODAL (Pop-up Animation) --- */}
+          {selectedRecipe && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-[2rem] max-w-2xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl animate-pop-in">
+                <button onClick={() => setSelectedRecipe(null)} className="absolute top-4 right-4 p-2 rounded-full bg-black/20 hover:bg-black/40 text-white backdrop-blur-md transition-all z-10">
+                  <Icon path={paths.x} />
+                </button>
+                
+                <div className="relative h-72">
+                  <img src={selectedRecipe.image} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+                  <div className="absolute bottom-6 left-6 right-6 text-white">
+                    <span className="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg bg-teal-500 mb-3 inline-block shadow-lg">{selectedRecipe.category}</span>
+                    <h2 className="text-3xl font-black">{selectedRecipe.title}</h2>
+                  </div>
+                </div>
+
+                <div className="p-8">
+                  <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-slate-600 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <span className="flex items-center gap-2"><Icon path={paths.clock} className="text-teal-600" /> {selectedRecipe.time}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                    <span className="flex items-center gap-2"><Icon path={paths.utensils} className="text-teal-600" /> {selectedRecipe.difficulty} Mode</span>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                      <h4 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><Icon path={paths.list}/> Ingredients</h4>
+                      <ul className="space-y-3">
+                        {selectedRecipe.ingredients.map((ing, i) => (
+                          <li key={i} className="flex items-center gap-3 text-slate-700 font-medium">
+                            <span className="w-2 h-2 rounded-full bg-teal-400"></span> {ing}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2"><Icon path={paths.sparkles}/> Instructions</h4>
+                      <p className="text-slate-600 leading-relaxed font-medium">
+                        {selectedRecipe.instructions}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
