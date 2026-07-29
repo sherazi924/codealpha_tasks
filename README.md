@@ -48,4 +48,4 @@ Since this project is configured in a standalone single HTML file, you don't eve
 
 1. **Clone the repository**:
    ```bash
-   git clone [https://github.com/your-username/TastyTrack-Pro.git](https://github.com/your-username/TastyTrack-Pro.git)
+git clone [https://github.com/sherazi924/codealpha_tasks.git](https://github.com/sherazi924/codealpha_tasks.git)
