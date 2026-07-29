@@ -8,7 +8,22 @@
 
 **Dormon Pro** is a sleek, ultra-modern, iOS-inspired AI Chat Workspace built with a **VIP Glassmorphism UI**, dynamic interactive mouse spotlight glow, and blazing-fast response speeds powered by the **Groq API**.
 
-Designed for zero setup — no build tools, bundlers, or server setups required. Just open `index.html` in any browser and start chatting!
+---
+
+## 📸 Screenshots & Preview
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/822db540-bfcb-4610-8dd2-f759e1ac30bd" alt="Dormon Pro Overview" width="100%" />
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/030bc38e-6d08-4e9c-bdca-2dd079615507" alt="Chat Experience" width="49%" />
+  <img src="https://github.com/user-attachments/assets/472f025c-bb19-460e-9e9d-bb01a6806b85" alt="Settings Panel" width="49%" />
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/7eb80ce2-71a1-45e2-b9a2-14e08767d2ec" alt="Full Interface Preview" width="100%" />
+</p>
 
 ---
 
@@ -50,4 +65,4 @@ Since this project runs entirely in the browser using CDN references, no install
 ### Option 1: Run Locally
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/YOUR_USERNAME/dormon-pro-glass.git](https://github.com/YOUR_USERNAME/dormon-pro-glass.git)
+   git clone [https://github.com/sherazi924/codealpha_tasks.git](https://github.com/sherazi924/codealpha_tasks.git)
