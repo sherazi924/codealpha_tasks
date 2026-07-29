@@ -1,1 +1,569 @@
 
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dormon Pro - iOS Glass VIP</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Marked.js & Highlight.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <script>
+    marked.setOptions({
+      highlight: function(code, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          return hljs.highlight(code, { language: lang }).value;
+        }
+        return hljs.highlightAuto(code).value;
+      }
+    });
+
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+          },
+          colors: {
+            ios: {
+              blue: '#0a84ff',
+              dark: '#000000',
+              glass: 'rgba(28, 28, 30, 0.5)',
+              glassLight: 'rgba(255, 255, 255, 0.1)',
+              border: 'rgba(255, 255, 255, 0.1)',
+            }
+          },
+          animation: {
+            'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'toast-in': 'toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            slideUp: {
+              '0%': { opacity: 0, transform: 'translateY(20px)' },
+              '100%': { opacity: 1, transform: 'translateY(0)' }
+            },
+            toastIn: {
+              '0%': { opacity: 0, transform: 'translate(-50%, -20px) scale(0.9)' },
+              '100%': { opacity: 1, transform: 'translate(-50%, 0) scale(1)' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+  
+  <!-- React & Babel -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    /* CSS Variables for Mouse Tracking */
+    :root {
+      --mouse-x: 50%;
+      --mouse-y: 50%;
+    }
+
+    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background-color: #000; -webkit-font-smoothing: antialiased; }
+    
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    
+    .markdown-body p { margin-bottom: 0.75em; line-height: 1.5; font-size: 15px; }
+    .markdown-body p:last-child { margin-bottom: 0; }
+    .markdown-body strong { color: #fff; font-weight: 600; }
+    .markdown-body pre { background: rgba(0,0,0,0.4) !important; padding: 1rem; border-radius: 1rem; overflow-x: auto; margin: 1em 0; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
+    .markdown-body pre code { background: transparent !important; padding: 0; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .markdown-body code:not(pre code) { background: rgba(255, 255, 255, 0.1); padding: 0.2em 0.4em; border-radius: 0.4rem; font-size: 13px; font-family: monospace; color: #78a8ff; }
+    
+    textarea { -ms-overflow-style: none; scrollbar-width: none; resize: none; }
+    textarea::-webkit-scrollbar { display: none; }
+
+    /* Interactive Premium Glass Glow Effect */
+    .interactive-glass {
+      position: relative;
+    }
+    .interactive-glass::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle 600px at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.08), transparent 40%);
+      z-index: 0;
+      pointer-events: none;
+      transition: background 0.1s ease;
+    }
+  </style>
+</head>
+<body class="text-white relative">
+
+  <!-- Ambient Background -->
+  <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-indigo-900/30 mix-blend-screen filter blur-[100px] animate-pulse-slow"></div>
+    <div class="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-blue-900/20 mix-blend-screen filter blur-[120px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+    <div class="absolute top-[40%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-purple-900/20 mix-blend-screen filter blur-[150px]"></div>
+  </div>
+
+  <div id="root" class="h-full w-full relative z-10 flex justify-center"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const defaultMessages = [
+      { id: 1, sender: 'bot', text: 'Salam! Main **Dormon Pro** hoon. Aapka VIP iOS AI Workspace tayyar hai.\n\nMain aapki coding, writing, aur mushkil tasks mein madad kar sakta hoon. Boliye?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+    ];
+
+    const quickPromptsList = [
+      "Write a Python script for...", 
+      "Translate this to Urdu...", 
+      "Explain Quantum Physics...",
+      "Fix bugs in my code..."
+    ];
+
+    const Icons = {
+      Send: () => <svg className="w-5 h-5 ml-0.5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>,
+      Stop: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>,
+      Mic: ({ on }) => <svg className={`w-5 h-5 ${on ? 'text-red-500 animate-pulse' : ''}`} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path strokeLinecap="round" strokeLinejoin="round" d="M19 10v2a7 7 0 01-14 0v-2 M12 19v4 M8 23h8"/></svg>,
+      Settings: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>,
+      Copy: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path strokeLinecap="round" strokeLinejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>,
+      Speaker: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8.5 8.5 0 010 11.9M12 18.5l-4-4H5a2 2 0 01-2-2v-3a2 2 0 012-2h3l4-4v15z"></path></svg>,
+      Refresh: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>,
+      DownArrow: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>,
+      Close: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>,
+      Trash: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>,
+      Download: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>,
+      Expand: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>,
+      Paperclip: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+    };
+
+    function App() {
+      const [messages, setMessages] = useState(() => JSON.parse(localStorage.getItem('dormon_messages')) || defaultMessages);
+      const [input, setInput] = useState('');
+      const [apiKey, setApiKey] = useState(() => localStorage.getItem('dormon_groq_key') || '');
+      const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('dormon_model') || 'llama-3.3-70b-versatile');
+      const [systemPrompt, setSystemPrompt] = useState(() => localStorage.getItem('dormon_sys_prompt') || 'You are Dormon VIP, a highly intelligent and helpful AI assistant.');
+      
+      const [isTyping, setIsTyping] = useState(false);
+      const [isListening, setIsListening] = useState(false);
+      const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+      const [toast, setToast] = useState(null);
+      const [showScrollBtn, setShowScrollBtn] = useState(false);
+      const [abortController, setAbortController] = useState(null);
+
+      const chatEndRef = useRef(null);
+      const chatContainerRef = useRef(null);
+      const textareaRef = useRef(null);
+
+      // Mouse Tracking for Interactive Glow Effect
+      useEffect(() => {
+        const handleMouseMove = (e) => {
+          document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+          document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+      }, []);
+
+      useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        localStorage.setItem('dormon_messages', JSON.stringify(messages));
+      }, [messages, isTyping]);
+
+      const handleScroll = (e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        setShowScrollBtn(scrollHeight - scrollTop - clientHeight > 100);
+      };
+
+      const scrollToBottom = () => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+      const showToast = (msg, type = 'success') => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 3000);
+      };
+
+      /* --- 5 NEW FUNCTIONS START --- */
+      
+      // 1. Clear Chat
+      const handleClearChat = () => {
+        if(confirm("Purani sari chat delete kar dein?")) {
+          setMessages(defaultMessages);
+          showToast("Chat Cleared 🧹");
+        }
+      };
+
+      // 2. Export Chat
+      const handleExportChat = () => {
+        const chatText = messages.map(m => `[${m.time}] ${m.sender.toUpperCase()}:\n${m.text}`).join('\n\n');
+        const blob = new Blob([chatText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'Dormon_VIP_Chat.txt'; a.click();
+        showToast("Chat Exported 📄");
+      };
+
+      // 3. Fullscreen Toggle
+      const toggleFullscreen = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+          showToast("Fullscreen Mode On 🔲");
+        } else {
+          document.exitFullscreen();
+        }
+      };
+
+      // 4. Quick Prompt Handler
+      const handleQuickPrompt = (prompt) => {
+        handleSend(prompt);
+      };
+
+      // 5. Attachment Placeholder
+      const handleAttachment = () => {
+        showToast("File/Image upload update coming soon! 📎", "success");
+      };
+
+      /* --- 5 NEW FUNCTIONS END --- */
+
+      const handleCopy = (text) => {
+        navigator.clipboard.writeText(text);
+        showToast("Copied to clipboard 📋");
+      };
+
+      const speakText = (text) => {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const plainText = text.replace(/[*_#`~]/g, '');
+          const msg = new SpeechSynthesisUtterance(plainText);
+          window.speechSynthesis.speak(msg);
+          showToast("Reading aloud... 🔊");
+        } else {
+          showToast("Text-to-Speech not supported.", "error");
+        }
+      };
+
+      const handleVoiceInput = () => {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+          showToast('Speech Recognition not supported.', 'error'); return;
+        }
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ur-PK';
+        recognition.onstart = () => setIsListening(true);
+        recognition.onend = () => setIsListening(false);
+        recognition.onresult = (e) => {
+          const text = e.results[0][0].transcript;
+          setInput(prev => (prev ? `${prev} ${text}` : text));
+        };
+        recognition.start();
+      };
+
+      const handleTextareaChange = (e) => {
+        setInput(e.target.value);
+        e.target.style.height = 'auto';
+        e.target.style.height = `${Math.min(e.target.scrollHeight, 150)}px`;
+      };
+
+      const stopGeneration = () => {
+        if (abortController) {
+          abortController.abort();
+          setIsTyping(false);
+          setAbortController(null);
+          showToast("Generation Stopped 🛑", "error");
+        }
+      };
+
+      const callGroqAPI = async (userText, msgHistory = messages) => {
+        if (!apiKey) {
+          setIsSettingsOpen(true);
+          return "⚠️ **API Key Missing!** Please add your Groq API key in the settings.";
+        }
+        
+        const controller = new AbortController();
+        setAbortController(controller);
+
+        const apiMessages = [
+          { role: "system", content: systemPrompt },
+          ...msgHistory.slice(-6).map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
+          { role: "user", content: userText }
+        ];
+
+        try {
+          const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            body: JSON.stringify({ model: selectedModel, messages: apiMessages }),
+            signal: controller.signal
+          });
+          const data = await response.json();
+          setAbortController(null);
+          if (response.ok && data.choices) return data.choices[0].message.content;
+          return `**Error:** ${data.error?.message || 'Invalid Request'}`;
+        } catch (err) { 
+          setAbortController(null);
+          if (err.name === 'AbortError') return "**Generation Aborted by User.**";
+          return "**Connection Error:** Check your network."; 
+        }
+      };
+
+      const handleSend = async (textToSend) => {
+        const query = typeof textToSend === 'string' ? textToSend : input;
+        if (!query.trim()) return;
+
+        const newUserMsg = { id: Date.now(), sender: 'user', text: query, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+        const newHistory = [...messages, newUserMsg];
+        
+        setMessages(newHistory);
+        if (typeof textToSend !== 'string') {
+          setInput('');
+          if(textareaRef.current) textareaRef.current.style.height = 'auto';
+        }
+        setIsTyping(true);
+
+        const aiResponse = await callGroqAPI(query, newHistory.slice(0, -1));
+        setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'bot', text: aiResponse, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+        setIsTyping(false);
+      };
+
+      const handleRegenerate = async () => {
+        const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
+        if (!lastUserMsg) return;
+        
+        const historyWithoutLastBot = [...messages];
+        if (historyWithoutLastBot[historyWithoutLastBot.length -1].sender === 'bot') {
+          historyWithoutLastBot.pop();
+        }
+        setMessages(historyWithoutLastBot);
+        
+        setIsTyping(true);
+        const aiResponse = await callGroqAPI(lastUserMsg.text, historyWithoutLastBot.slice(0, -1));
+        setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'bot', text: aiResponse, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+        setIsTyping(false);
+      };
+
+      const wordCount = input.trim().split(/\s+/).filter(w => w.length > 0).length;
+      const charCount = input.length;
+
+      return (
+        <div className="flex flex-col w-full max-w-[1200px] h-[100dvh] relative overflow-hidden bg-transparent sm:py-6 sm:px-6 py-0 px-0">
+          
+          {/* iOS Glassmorphism Main Container with Interactive Glow */}
+          <div className="interactive-glass flex flex-col flex-1 h-full w-full bg-ios-glass sm:rounded-[2.5rem] rounded-none sm:border border-0 border-ios-border shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl overflow-hidden z-10 transition-all duration-300">
+            
+            {/* Header */}
+            <header className="flex-none flex items-center justify-between bg-black/20 backdrop-blur-md px-6 py-4 border-b border-ios-border z-20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-ios-glassLight border border-ios-border flex items-center justify-center text-white font-bold text-lg shadow-inner">
+                  D
+                </div>
+                <div className="flex flex-col">
+                  <h1 className="font-semibold text-lg tracking-tight text-white leading-tight">
+                    Dormon Pro
+                  </h1>
+                  <div className="text-[11px] text-gray-400 font-medium flex items-center gap-1.5 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> 
+                    {selectedModel.split('-')[0].toUpperCase()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Header Actions (New Functions Added Here) */}
+              <div className="flex items-center gap-2">
+                <button onClick={handleClearChat} className="p-2.5 rounded-full bg-white/5 text-gray-300 border border-ios-border hover:bg-red-500/20 hover:text-red-400 transition-all hidden sm:block" title="Clear Chat">
+                  <Icons.Trash />
+                </button>
+                <button onClick={handleExportChat} className="p-2.5 rounded-full bg-white/5 text-gray-300 border border-ios-border hover:bg-white/20 hover:text-white transition-all hidden sm:block" title="Export Chat">
+                  <Icons.Download />
+                </button>
+                <button onClick={toggleFullscreen} className="p-2.5 rounded-full bg-white/5 text-gray-300 border border-ios-border hover:bg-white/20 hover:text-white transition-all hidden sm:block" title="Fullscreen">
+                  <Icons.Expand />
+                </button>
+                <div className="w-[1px] h-6 bg-ios-border mx-1 hidden sm:block"></div>
+                <button onClick={() => setIsSettingsOpen(true)} className={`p-2.5 rounded-full backdrop-blur-md border transition-all ${!apiKey ? 'bg-red-500/20 text-red-400 border-red-500/30 animate-pulse' : 'bg-white/10 text-gray-200 border-ios-border hover:bg-white/20'}`}>
+                  <Icons.Settings />
+                </button>
+              </div>
+            </header>
+
+            {/* Chat Area */}
+            <div 
+              ref={chatContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 relative z-10"
+            >
+              {messages.map((msg, idx) => (
+                <div key={msg.id} className={`flex gap-3 animate-slide-up ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  
+                  {msg.sender === 'bot' && (
+                    <div className="w-8 h-8 rounded-full bg-white/10 border border-ios-border text-white flex items-center justify-center font-semibold text-xs shrink-0 mt-1 backdrop-blur-md shadow-sm">D</div>
+                  )}
+
+                  <div className={`max-w-[85%] sm:max-w-[75%] px-5 py-3.5 text-[15px] relative group ${
+                    msg.sender === 'user' 
+                      ? 'bg-ios-blue text-white rounded-[1.5rem] rounded-br-sm shadow-md' 
+                      : 'bg-white/10 backdrop-blur-lg text-gray-100 border border-ios-border rounded-[1.5rem] rounded-tl-sm shadow-md'
+                  }`}>
+                    
+                    {msg.sender === 'bot' ? (
+                      <div className="markdown-body z-10 relative" dangerouslySetInnerHTML={{ __html: marked.parse(msg.text) }}></div>
+                    ) : (
+                      <p className="z-10 relative whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+                    )}
+
+                    <div className={`flex items-center justify-between mt-2 ${msg.sender === 'user' ? 'text-blue-100' : 'text-gray-400'}`}>
+                      <span className="text-[10px] font-medium tracking-wide opacity-70">{msg.time}</span>
+                      
+                      {msg.sender === 'bot' && (
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {idx === messages.length - 1 && (
+                            <button onClick={handleRegenerate} className="hover:text-white p-1" title="Regenerate"><Icons.Refresh /></button>
+                          )}
+                          <button onClick={() => speakText(msg.text)} className="hover:text-white p-1" title="Read Aloud"><Icons.Speaker /></button>
+                          <button onClick={() => handleCopy(msg.text)} className="hover:text-white p-1" title="Copy"><Icons.Copy /></button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {isTyping && (
+                <div className="flex gap-3 items-center animate-slide-up">
+                  <div className="w-8 h-8 rounded-full bg-white/10 border border-ios-border text-white flex items-center justify-center font-semibold text-xs backdrop-blur-md">D</div>
+                  <div className="bg-white/10 backdrop-blur-lg border border-ios-border rounded-full rounded-tl-sm px-5 py-4 flex gap-1.5 h-[42px] items-center shadow-md">
+                    <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></span>
+                    <span className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></span>
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} className="h-4" />
+            </div>
+
+            {/* Scroll Button */}
+            {showScrollBtn && (
+              <button onClick={scrollToBottom} className="absolute bottom-36 left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur-xl border border-ios-border text-white p-2.5 rounded-full shadow-lg z-30 transition-transform hover:scale-110">
+                <Icons.DownArrow />
+              </button>
+            )}
+
+            {/* iOS Input Form Area */}
+            <div className="flex-none p-4 sm:p-6 bg-black/30 backdrop-blur-xl border-t border-ios-border z-20 flex flex-col">
+              
+              {/* Quick Prompts (Visible only initially to save space) */}
+              {messages.length <= 2 && (
+                <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide w-full" style={{ scrollbarWidth: 'none' }}>
+                  {quickPromptsList.map((p, i) => (
+                    <button key={i} onClick={() => handleQuickPrompt(p)} className="whitespace-nowrap px-3 py-1.5 rounded-full bg-white/10 border border-ios-border text-xs text-gray-300 hover:bg-white/20 hover:text-white transition-all shadow-sm">
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2 bg-black/40 backdrop-blur-2xl p-1.5 rounded-full border border-ios-border shadow-inner items-end relative w-full">
+                
+                {/* File Attachment Function */}
+                <button type="button" onClick={handleAttachment} className="p-3 rounded-full transition-colors shrink-0 m-0.5 text-gray-400 hover:text-white hover:bg-white/10">
+                  <Icons.Paperclip />
+                </button>
+
+                <textarea 
+                  ref={textareaRef}
+                  value={input}
+                  onChange={handleTextareaChange}
+                  onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+                  placeholder="Message..."
+                  rows="1"
+                  className="flex-1 bg-transparent px-1 py-3.5 outline-none text-[15px] text-white placeholder-gray-500 w-full min-h-[48px] max-h-[120px] leading-tight"
+                />
+
+                <button type="button" onClick={handleVoiceInput} className={`p-3 rounded-full transition-colors shrink-0 m-0.5 ${isListening ? 'bg-red-500/80 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}>
+                  <Icons.Mic on={isListening} />
+                </button>
+
+                {isTyping ? (
+                  <button type="button" onClick={stopGeneration} className="shrink-0 bg-red-500 text-white p-3 rounded-full m-0.5 shadow-md flex items-center justify-center">
+                    <Icons.Stop />
+                  </button>
+                ) : (
+                  <button type="submit" disabled={!input.trim()} className="shrink-0 bg-ios-blue disabled:bg-ios-blue/40 disabled:text-white/50 text-white p-3 rounded-full m-0.5 shadow-md flex items-center justify-center transition-all hover:bg-blue-500">
+                    <Icons.Send />
+                  </button>
+                )}
+              </form>
+              
+              <div className="text-center mt-3 text-[10px] text-gray-500 font-medium flex justify-center gap-4">
+                <span>{wordCount} words &bull; {charCount} chars</span>
+                <span className="sm:hidden flex gap-3 text-gray-400">
+                  <span onClick={handleClearChat} className="cursor-pointer hover:text-red-400">Clear</span>
+                  <span onClick={handleExportChat} className="cursor-pointer hover:text-white">Export</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* iOS Toast Notification */}
+          {toast && (
+            <div className="fixed top-12 left-1/2 -translate-x-1/2 bg-white/20 backdrop-blur-3xl border border-ios-border text-white px-5 py-3 rounded-full shadow-2xl text-sm font-medium flex items-center gap-2 animate-toast-in z-50">
+              <span className={`w-2 h-2 rounded-full ${toast.type === 'error' ? 'bg-red-500' : 'bg-green-500'}`}></span>
+              {toast.msg}
+            </div>
+          )}
+
+          {/* Settings Drawer Overlay */}
+          {isSettingsOpen && (
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity" onClick={() => setIsSettingsOpen(false)}></div>
+          )}
+
+          {/* iOS Glass Settings Drawer */}
+          <div className={`absolute top-0 right-0 h-full w-full sm:w-[380px] bg-black/60 backdrop-blur-3xl border-l border-ios-border shadow-2xl z-50 transform transition-transform duration-400 ease-in-out flex flex-col ${isSettingsOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className="p-6 border-b border-ios-border flex justify-between items-center bg-white/5">
+              <h2 className="text-xl font-semibold tracking-tight text-white">Settings</h2>
+              <button onClick={() => setIsSettingsOpen(false)} className="p-2 bg-white/10 rounded-full text-gray-300 hover:text-white hover:bg-white/20 transition-all">
+                <Icons.Close />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Groq API Key</label>
+                <input type="password" id="drawerApiKey" defaultValue={apiKey} placeholder="gsk_..." className="w-full p-4 bg-black/40 border border-ios-border rounded-2xl outline-none text-sm font-mono text-white focus:border-ios-blue transition-colors shadow-inner" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">AI Model</label>
+                <select id="drawerModel" defaultValue={selectedModel} className="w-full p-4 bg-black/40 border border-ios-border rounded-2xl outline-none text-sm text-white appearance-none focus:border-ios-blue transition-colors shadow-inner">
+                  <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+                  <option value="llama3-8b-8192">Llama 3 8B</option>
+                  <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">System Instructions</label>
+                <textarea id="drawerPrompt" defaultValue={systemPrompt} rows="3" className="w-full p-4 bg-black/40 border border-ios-border rounded-2xl outline-none text-sm text-white focus:border-ios-blue transition-colors shadow-inner resize-none"></textarea>
+              </div>
+            </div>
+            
+            <div className="p-6 bg-white/5 border-t border-ios-border">
+              <button onClick={() => {
+                setApiKey(document.getElementById('drawerApiKey').value); localStorage.setItem('dormon_groq_key', document.getElementById('drawerApiKey').value);
+                setSelectedModel(document.getElementById('drawerModel').value); localStorage.setItem('dormon_model', document.getElementById('drawerModel').value);
+                setSystemPrompt(document.getElementById('drawerPrompt').value); localStorage.setItem('dormon_sys_prompt', document.getElementById('drawerPrompt').value);
+                setIsSettingsOpen(false); showToast("Settings Saved!");
+              }} className="w-full p-4 rounded-2xl bg-ios-blue text-white font-semibold shadow-lg hover:bg-blue-500 transition-colors">Save Preferences</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
